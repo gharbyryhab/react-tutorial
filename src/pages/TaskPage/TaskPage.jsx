@@ -1,13 +1,16 @@
 import TaskForm from "../../components/taskForm/TaskForm.jsx";
 import Task from "../../components/task/Task.jsx";
 import TasksList from "../../components/tasksList/TasksList.jsx";
+import { useState } from "react";
 
 function TaskPage (){
+
+
     const steps = ["Entrer a title", "Click on add button"];
 
     const loading = false ;
 
-    const tasks = [
+    const [tasks, setTasks] = useState([
     {
         _id:"1",
         title:"Learn HTML",
@@ -29,9 +32,45 @@ function TaskPage (){
         duration:120,
     },
 
-    ];
-function SaySomething(value) {
-    alert ("Hello" + value);
+    ]);
+
+
+
+function addTask(title,duration){
+    console.log("title, duration :",title,duration);
+    
+    const newTask = {
+        _id:Math.random().toString(),
+        title,
+        duration
+    };
+    
+    const newTasks = [...tasks, newTask];
+    setTasks(newTasks);
+    
+}
+
+function deleteTask(id){
+    const newTasks = tasks.filter((task) => task._id !== id);
+    setTasks(newTasks);
+}
+
+
+function updateTask(id, title, duration) {
+    const newTasks = tasks.map((task) => {
+        if (task._id === id){
+            return {...task, title, duration};
+        }
+        return task;
+    });
+    
+    setTasks(newTasks);
+}
+
+const [isVisible, setIsVisible] = useState(true);
+function toggleVisibility(e){
+    console.log(e);
+    setIsVisible(!isVisible);
 }
 
     return(
@@ -41,27 +80,22 @@ function SaySomething(value) {
                 <li key={index}>{step}</li>
             ))}
             </ul>
-            
-            <TaskForm SaySomething={SaySomething} />
-            {/* {loading ? ( 
-                <div> loading...</div>
-            ) : (
-            <>
-                <Task/>
-                <Task/>
-                <Task/>
-            </>
-            )} */}
+            <button onClick={toggleVisibility}>Toggle Visibility</button>
+            <button onClick={(e)=>toggleVisibility(e)}>Toggle Visibility</button>
+            <TaskForm addTask={addTask} />
+            {
+                
+            }
             {loading && <div> loading...</div>}
-            {! loading && (
-                <TasksList myTasks={tasks} />
-            // <>
-            //     <Task title="Learn HTML" duration={30} details={{ level:1}}/>
-            //     <Task title="Learn CSS"  details={{ level:2}}/>
-            //     <Task title="Learn JS" duration={90} /> 
-            // </>
+            {! loading && isVisible && 
+                <TasksList 
+                    myTasks={tasks} 
+                    deleteTask={deleteTask} 
+                    updateTask={updateTask} 
+                />
+                        
             
-            )} 
+            } 
         </div>
     );
 }
