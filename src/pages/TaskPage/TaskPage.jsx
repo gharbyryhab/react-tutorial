@@ -1,101 +1,109 @@
 import TaskForm from "../../components/taskForm/TaskForm.jsx";
 import Task from "../../components/task/Task.jsx";
 import TasksList from "../../components/tasksList/TasksList.jsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import * as api from "../../services/tasks.service";
 
-function TaskPage (){
-
+function TaskPage() {
 
     const steps = ["Entrer a title", "Click on add button"];
 
-    const loading = false ;
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+    const [tasks, setTasks] = useState([]);
+    const [searchValue, setSearchValue] = useState("");
+    const [isVisible, setIsVisible] = useState(true);
 
-    const [tasks, setTasks] = useState([
-    {
-        _id:"1",
-        title:"Learn HTML",
-        duration:30,
-    },
-     {
-        _id:"2",
-        title:"Learn CSS",
-        duration:60,
-    },
-    {
-        _id:"3",
-        title:"Learn JS",
-        duration:90,
-    },
-    {
-        _id:"4",
-        title:"Learn React",
-        duration:120,
-    },
-
-    ]);
-
-
-
-function addTask(title,duration){
-    console.log("title, duration :",title,duration);
-    
-    const newTask = {
-        _id:Math.random().toString(),
-        title,
-        duration
-    };
-    
-    const newTasks = [...tasks, newTask];
-    setTasks(newTasks);
-    
-}
-
-function deleteTask(id){
-    const newTasks = tasks.filter((task) => task._id !== id);
-    setTasks(newTasks);
-}
-
-
-function updateTask(id, title, duration) {
-    const newTasks = tasks.map((task) => {
-        if (task._id === id){
-            return {...task, title, duration};
-        }
-        return task;
-    });
-    
-    setTasks(newTasks);
-}
-
-const [isVisible, setIsVisible] = useState(true);
-function toggleVisibility(e){
-    console.log(e);
-    setIsVisible(!isVisible);
-}
-
-    return(
-        <div className="taskPage">
-            <ul>
-                {steps.map((step, index)=> (
-                <li key={index}>{step}</li>
-            ))}
-            </ul>
-            <button onClick={toggleVisibility}>Toggle Visibility</button>
-            <button onClick={(e)=>toggleVisibility(e)}>Toggle Visibility</button>
-            <TaskForm addTask={addTask} />
-            {
-                
+    // Fetch tasks
+    useEffect(() => {
+        async function fetchTasks() {
+            setLoading(true);
+            try {
+                const tasks = await api.fetchTasks();
+                setTasks(tasks);
+                setError(false);
+            } catch (error) {
+                console.error(error);
+                setError(true);
+            } finally {
+                setLoading(false);
             }
-            {loading && <div> loading...</div>}
-            {! loading && isVisible && 
-                <TasksList 
-                    myTasks={tasks} 
-                    deleteTask={deleteTask} 
-                    updateTask={updateTask} 
+        }
+
+        fetchTasks();
+    }, []);
+
+    // Ajouter une tâche
+    async function addTask(title, duration) {
+        const newTask = await api.addTask({ title, duration });
+
+        const newTasks = [...tasks, newTask];
+        setTasks(newTasks);
+    }
+
+    // Modifier une tâche
+    async function updateTask(id, title, duration) {
+        const updatedTask = await api.updateTask(id, title, duration);
+
+        const newTasks = tasks.map((task) => {
+            if (task._id === id) {
+                return updatedTask;
+            }
+            return task;
+        });
+
+        setTasks(newTasks);
+    }
+
+    // Supprimer une tâche
+    async function deleteTask(id) {
+        await api.deleteTask(id);
+
+        const newTasks = tasks.filter((task) => task._id !== id);
+
+        setTasks(newTasks);
+    }
+
+    // Afficher / cacher la liste
+    function toggleVisibility(e) {
+        console.log(e);
+        setIsVisible(!isVisible);
+    }
+
+    return (
+        <div className="taskPage">
+
+            <ul>
+                {steps.map((step, index) => (
+                    <li key={index}>{step}</li>
+                ))}
+            </ul>
+
+            <button onClick={toggleVisibility}>Toggle Visibility</button>
+            <button onClick={(e) => toggleVisibility(e)}>Toggle Visibility</button>
+
+            <TaskForm addTask={addTask} />
+
+            <input
+                type="text"
+                name="title"
+                value={searchValue}
+                onChange={(e) => {
+                    setSearchValue(e.target.value);
+                }}
+            />
+
+            {error && <div>Error...</div>}
+            {loading && <div>Loading...</div>}
+
+            {!loading && isVisible && (
+                <TasksList
+                    myTasks={tasks}
+                    deleteTask={deleteTask}
+                    updateTask={updateTask}
                 />
-                        
-            
-            } 
+            )}
+
         </div>
     );
 }

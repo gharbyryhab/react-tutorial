@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./taskForm.css"
 function TaskForm (props) {
+    // propos.SaySomething("ISAMM")
 
-    const [title, setTitle]=useState("");
-    const [duration, setDuration]=useState("");
+    const [title, setTitle]=useState("learn");
+    const [duration, setDuration]=useState(0);
 
     function handleTitle(e){
         setTitle(e.target.value);
@@ -15,6 +16,10 @@ function TaskForm (props) {
     function handleAdd(){
         props.addTask(title, duration);
     }
+
+    useEffect(()=>{
+        document.title = title;
+    });
     return  (
         
     <div className="taskForm">
