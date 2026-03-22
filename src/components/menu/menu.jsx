@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
-function Menu() {
+import { Link, NavLink } from 'react-router-dom';
+import './menu.css';
+function Menu(props) {
     return (
         <ul>
-            <li><Link to='/hello'>Hello</Link></li>
-            <li><Link to='/tasks'>Tasks</Link></li>
+            {props.role === 'student' && <li><NavLink className={(params) => params.isActive ? 'custom-link' : ''} to='/students/hello'>Hello</NavLink></li>}
+            {props.role === 'teacher' && <li><NavLink className={(params) => params.isActive ? 'custom-link' : ''} to='/teachers/tasks'>Tasks</NavLink></li>}
         </ul>
     );
 }
